@@ -1,0 +1,56 @@
+TUTORIAL_10_TARGET=tutorial10
+
+TUTORIAL_10_SOURCE = Tutorial10/tutorial10.cpp
+
+OS := $(shell uname -s)
+ifeq ($(OS),Darwin)
+CFLAGS += -fpermissive -Wno-deprecated -Wno-write-strings -msse2
+LFLAGS += -framework OpenGL -framework glut
+INCLUDE = /usr/include/ -I. -Iinclude -I/usr/include/malloc
+else
+CFLAGS += -fpermissive -fopenmp -Wno-deprecated -Wno-write-strings -msse2
+LFLAGS += -lGL -lGLU -lglut
+INCLUDE = /usr/include/ -I. -Iinclude
+endif
+
+CFLAGS_DEBUG = -DDEBUG -g3 -DGLEW_STATIC
+LFLAGS_DEBUG =
+
+CFLAGS_RELEASE = -O3 -DRELEASE -funroll-loops -ffast-math
+LFLAGS_RELEASE = -O3 
+
+SRC = ./
+BIN = ./
+BIN_O = ./
+
+CC=gcc
+CXX=g++
+MD=mkdir
+
+TUTORIAL_10_OBJECT=$(addprefix $(BIN_O), $(addsuffix .o, $(basename $(TUTORIAL_10_SOURCE))))
+
+all: CFLAGS += $(CFLAGS_DEBUG)
+all: LFLAGS += $(LFLAGS_DEBUG)
+all: $(BIN)$(TUTORIAL_10_TARGET)
+
+release: CFLAGS += $(CFLAGS_RELEASE)
+release: LFLAGS += $(LFLAGS_RELEASE)
+release: $(BIN)$(TUTORIAL_10_TARGET)
+
+clean:
+	rm -f $(BIN)$(TUTORIAL_10_TARGET)
+	rm -f Tutorial10/*.o
+
+$(BIN):
+	mkdir -p $(BIN)
+
+$(BIN)$(TUTORIAL_10_TARGET): $(TUTORIAL_10_OBJECT)
+	mkdir -p $(BIN)
+	$(CXX) -o $@ $(TUTORIAL_10_OBJECT) $(LFLAGS)
+
+$(BIN_O)%.o: $(SRC)%.c
+	$(CC) -c -o $@ $(CFLAGS) -I$(INCLUDE) $<
+
+$(BIN_O)%.o: $(SRC)%.cpp
+	$(CXX) -c -o $@ $(CFLAGS) -I$(INCLUDE) $<
+
